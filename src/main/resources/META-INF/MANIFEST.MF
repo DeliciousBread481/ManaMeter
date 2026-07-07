@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: ManaMeter
+Specification-Vendor: ManaMeter
+Specification-Version: 1
+Implementation-Title: ManaMeter
+Implementation-Version: 1.0.0
+Implementation-Vendor: ManaMeter
+Implementation-Timestamp: 2026-01-17T00:01:02-0500
+
