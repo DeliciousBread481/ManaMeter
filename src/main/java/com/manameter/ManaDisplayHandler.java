@@ -2,6 +2,7 @@ package com.manameter;
 
 import com.hollingsworth.arsnouveau.api.ArsNouveauAPI;
 import com.manameter.config.ManaMeterConfig;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -10,7 +11,8 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @EventBusSubscriber(
    modid = "manameter",
-   bus = Bus.FORGE
+   bus = Bus.FORGE,
+   value = Dist.CLIENT
 )
 public class ManaDisplayHandler {
    @SubscribeEvent
