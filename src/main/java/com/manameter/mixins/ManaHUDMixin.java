@@ -20,13 +20,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ManaHUDMixin {
    @Inject(
       method = {"renderOverlay"},
-      at = {@At("TAIL")}
+      at = {@At("TAIL")},
+      remap = false
    )
    private static void injectCustomManaText(ForgeGui gui, GuiGraphics guiGraphics, float pt, int width, int height, CallbackInfo ci) {
       if ((Boolean)ManaMeterConfig.ENABLE_CUSTOM_OVERLAY.get()) {
-         Minecraft mc = Minecraft.m_91087_();
-         if (mc.f_91074_ != null) {
-            IManaCap mana = (IManaCap)CapabilityRegistry.getMana(mc.f_91074_).orElse((Object)null);
+         Minecraft mc = Minecraft.getInstance();
+         if (mc.player != null) {
+            IManaCap mana = CapabilityRegistry.getMana(mc.player).orElse(null);
             if (mana != null) {
                int maxMana = mana.getMaxMana();
                if (maxMana != 0) {
@@ -37,42 +38,42 @@ public class ManaHUDMixin {
                   double scale = (Double)ManaMeterConfig.TEXT_SCALE.get();
                   double rotation = (Double)ManaMeterConfig.ROTATION.get();
                   boolean enableShadow = (Boolean)ManaMeterConfig.ENABLE_SHADOW.get();
-                  int textWidth = mc.f_91062_.m_92895_(manaText);
-                  int maxWidth = mc.f_91062_.m_92895_(maxMana + "  /  " + maxMana);
+                  int textWidth = mc.font.width(manaText);
+                  int maxWidth = mc.font.width(maxMana + "  /  " + maxMana);
                   int baseX = offsetLeft + 54;
                   int baseY = yOffset - 10;
                   int x = baseX + (Integer)ManaMeterConfig.X_OFFSET.get();
                   int y = baseY + (Integer)ManaMeterConfig.Y_OFFSET.get();
                   int textColor = -12032;
                   int shadowColor = -7650029;
-                  guiGraphics.m_280168_().m_85836_();
+                  guiGraphics.pose().pushPose();
                   if (scale != (double)1.0F || rotation != (double)0.0F) {
-                     PoseStack var10000 = guiGraphics.m_280168_();
+                     PoseStack var10000 = guiGraphics.pose();
                      float var10001 = (float)(x + textWidth / 2);
-                     Objects.requireNonNull(mc.f_91062_);
-                     var10000.m_252880_(var10001, (float)(y + 9 / 2), 0.0F);
+                     Objects.requireNonNull(mc.font);
+                     var10000.translate(var10001, (float)(y + 9 / 2), 0.0F);
                      if (scale != (double)1.0F) {
-                        guiGraphics.m_280168_().m_85841_((float)scale, (float)scale, 1.0F);
+                        guiGraphics.pose().scale((float)scale, (float)scale, 1.0F);
                      }
 
                      if (rotation != (double)0.0F) {
-                        guiGraphics.m_280168_().m_252781_(Axis.f_252403_.m_252977_((float)rotation));
+                        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees((float)rotation));
                      }
 
-                     var10000 = guiGraphics.m_280168_();
+                     var10000 = guiGraphics.pose();
                      var10001 = (float)(-textWidth / 2);
-                     Objects.requireNonNull(mc.f_91062_);
-                     var10000.m_252880_(var10001, (float)(-9 / 2), 0.0F);
+                     Objects.requireNonNull(mc.font);
+                     var10000.translate(var10001, (float)(-9 / 2), 0.0F);
                      x = 0;
                      y = 0;
                   }
 
                   if (enableShadow) {
-                     guiGraphics.m_280056_(mc.f_91062_, manaText, x + 1, y + 1, shadowColor, false);
+                     guiGraphics.drawString(mc.font, manaText, x + 1, y + 1, shadowColor, false);
                   }
 
-                  guiGraphics.m_280056_(mc.f_91062_, manaText, x, y, textColor, false);
-                  guiGraphics.m_280168_().m_85849_();
+                  guiGraphics.drawString(mc.font, manaText, x, y, textColor, false);
+                  guiGraphics.pose().popPose();
                }
             }
          }
