@@ -29,9 +29,9 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 public class CustomManaOverlay {
    @SubscribeEvent
    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Pre event) {
-      if (event.getOverlay().id().m_135815_().equals("manabar") || event.getOverlay().id().toString().contains("mana")) {
-         Minecraft mc = Minecraft.m_91087_();
-         Player player = mc.f_91074_;
+      if (event.getOverlay().id().getPath().equals("manabar") || event.getOverlay().id().toString().contains("mana")) {
+         Minecraft mc = Minecraft.getInstance();
+         Player player = mc.player;
          if (player == null) {
             return;
          }
@@ -40,7 +40,7 @@ public class CustomManaOverlay {
             return;
          }
 
-         IManaCap mana = (IManaCap)CapabilityRegistry.getMana(player).orElse((Object)null);
+         IManaCap mana = CapabilityRegistry.getMana(player).orElse(null);
          if (mana == null) {
             return;
          }
@@ -55,8 +55,8 @@ public class CustomManaOverlay {
    }
 
    private static void renderEnhancedManaBar(GuiGraphics guiGraphics, Minecraft mc, int currentMana, int maxMana, int spellCost) {
-      int screenWidth = mc.m_91268_().m_85445_();
-      int screenHeight = mc.m_91268_().m_85446_();
+      int screenWidth = mc.getWindow().getGuiScaledWidth();
+      int screenHeight = mc.getWindow().getGuiScaledHeight();
       int offsetLeft = screenWidth / 2 - 91 + 81 + (Integer)ManaMeterConfig.MANA_BAR_X_OFFSET.get();
       int yOffset = screenHeight - 39 + (Integer)ManaMeterConfig.MANA_BAR_Y_OFFSET.get();
       int barWidth = 108;
@@ -75,11 +75,11 @@ public class CustomManaOverlay {
       float time = (float)(System.currentTimeMillis() % 2000L) / 2000.0F;
       float costAlpha = 0.5F + 0.4F * (float)Math.sin((double)time * Math.PI * (double)2.0F);
       RenderSystem.setShaderTexture(0, new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"));
-      guiGraphics.m_280163_(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"), offsetLeft, yOffset, 0.0F, 0.0F, barWidth, barHeight, 256, 256);
+      guiGraphics.blit(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"), offsetLeft, yOffset, 0.0F, 0.0F, barWidth, barHeight, 256, 256);
       if (mainFillWidth > 0) {
          RenderSystem.setShaderTexture(0, new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"));
-         int manaOffset = (int)(((float)mc.f_91073_.m_46467_() + mc.m_91296_()) / 3.0F % 33.0F) * 6;
-         guiGraphics.m_280163_(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"), offsetLeft + 9, yOffset + 9, 0.0F, (float)manaOffset, mainFillWidth, 6, 256, 256);
+         int manaOffset = (int)(((float)mc.level.getGameTime() + mc.getFrameTime()) / 3.0F % 33.0F) * 6;
+         guiGraphics.blit(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"), offsetLeft + 9, yOffset + 9, 0.0F, (float)manaOffset, mainFillWidth, 6, 256, 256);
       }
 
       if (costFillWidth > 0) {
@@ -88,25 +88,25 @@ public class CustomManaOverlay {
          int costStartX = offsetLeft + 9 + mainFillWidth;
          int costWidth = Math.min(costFillWidth, 96 - mainFillWidth + 1);
          RenderSystem.setShaderTexture(0, new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"));
-         int manaOffset = (int)(((float)mc.f_91073_.m_46467_() + mc.m_91296_()) / 3.0F % 33.0F) * 6;
-         guiGraphics.m_280163_(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"), costStartX, yOffset + 9, 0.0F, (float)manaOffset, costWidth, 6, 256, 256);
+         int manaOffset = (int)(((float)mc.level.getGameTime() + mc.getFrameTime()) / 3.0F % 33.0F) * 6;
+         guiGraphics.blit(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_mana.png"), costStartX, yOffset + 9, 0.0F, (float)manaOffset, costWidth, 6, 256, 256);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.disableBlend();
       }
 
       RenderSystem.setShaderTexture(0, new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"));
-      guiGraphics.m_280163_(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"), offsetLeft, yOffset + 1, 0.0F, 18.0F, barWidth, 20, 256, 256);
+      guiGraphics.blit(new ResourceLocation("ars_nouveau", "textures/gui/manabar_gui_border.png"), offsetLeft, yOffset + 1, 0.0F, 18.0F, barWidth, 20, 256, 256);
       String manaText = currentMana + "/" + maxMana;
       double scale = (Double)ManaMeterConfig.TEXT_SCALE.get();
-      guiGraphics.m_280168_().m_85836_();
-      guiGraphics.m_280168_().m_85841_((float)scale, (float)scale, 1.0F);
-      int scaledTextX = (int)((double)(offsetLeft + (Integer)ManaMeterConfig.X_OFFSET.get() + barWidth / 2) / scale - (double)(mc.f_91062_.m_92895_(manaText) / 2));
+      guiGraphics.pose().pushPose();
+      guiGraphics.pose().scale((float)scale, (float)scale, 1.0F);
+      int scaledTextX = (int)((double)(offsetLeft + (Integer)ManaMeterConfig.X_OFFSET.get() + barWidth / 2) / scale - (double)(mc.font.width(manaText) / 2));
       int scaledTextY = (int)((double)(yOffset + (Integer)ManaMeterConfig.Y_OFFSET.get() + 6) / scale);
       int textColor = parseColor((String)ManaMeterConfig.TEXT_COLOR.get());
       int shadowColor = parseColor((String)ManaMeterConfig.SHADOW_COLOR.get());
-      guiGraphics.m_280056_(mc.f_91062_, manaText, scaledTextX + 1, scaledTextY + 1, shadowColor, false);
-      guiGraphics.m_280056_(mc.f_91062_, manaText, scaledTextX, scaledTextY, textColor, false);
-      guiGraphics.m_280168_().m_85849_();
+      guiGraphics.drawString(mc.font, manaText, scaledTextX + 1, scaledTextY + 1, shadowColor, false);
+      guiGraphics.drawString(mc.font, manaText, scaledTextX, scaledTextY, textColor, false);
+      guiGraphics.pose().popPose();
    }
 
    private static int parseColor(String hex) {
@@ -122,17 +122,17 @@ public class CustomManaOverlay {
    }
 
    private static int getSpellCost(Player player) {
-      ItemStack mainHand = player.m_21120_(InteractionHand.MAIN_HAND);
-      ItemStack offHand = player.m_21120_(InteractionHand.OFF_HAND);
+      ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+      ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
       int cost = getItemSpellCost(mainHand, player);
       return cost > 0 ? cost : getItemSpellCost(offHand, player);
    }
 
    private static int getItemSpellCost(ItemStack stack, Player player) {
-      if (stack.m_41619_()) {
+      if (stack.isEmpty()) {
          return 0;
       } else {
-         if (stack.m_41720_() instanceof ICasterTool) {
+         if (stack.getItem() instanceof ICasterTool) {
             ISpellCaster caster = CasterUtil.getCaster(stack);
             Spell spell = caster.getSpell();
             if (!spell.isEmpty()) {
@@ -146,16 +146,16 @@ public class CustomManaOverlay {
    }
 
    private static boolean shouldDisplayManaBar(Player player) {
-      ItemStack mainHand = player.m_21205_();
-      ItemStack offHand = player.m_21206_();
-      Item mainItem = mainHand.m_41720_();
+      ItemStack mainHand = player.getMainHandItem();
+      ItemStack offHand = player.getOffhandItem();
+      Item mainItem = mainHand.getItem();
       if (mainItem instanceof IDisplayMana displayMana) {
          if (displayMana.shouldDisplay(mainHand)) {
             return true;
          }
       }
 
-      Item offItem = offHand.m_41720_();
+      Item offItem = offHand.getItem();
       if (offItem instanceof IDisplayMana displayMana) {
          if (displayMana.shouldDisplay(offHand)) {
             return true;

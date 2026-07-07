@@ -1,0 +1,28 @@
+# gradle
+.gradle/
+build/
+out/
+classes/
+
+# eclipse
+*.launch
+.settings/
+.metadata/
+.classpath
+.project
+bin/
+
+# idea
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# forge
+run/
+runs/
+run-data/
+logs/
+
+# fg cache
+mcmodsrepo/
